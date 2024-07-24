@@ -16,16 +16,33 @@ func main() {
 	// listBox := tview.NewBox().SetBorder(true).SetTitle(" List ")
 	currentBox := tview.NewBox().SetBorder(true).SetTitle(" Current ")
 
-	addNewForm := tview.NewForm().
-		AddInputField("Name", "", 20, nil, nil).
+	addNewForm := tview.NewForm()
+	addNewForm.AddInputField("Name", "", 20, nil, nil).
 		AddInputField("Init", "", 3, nil, nil).
 		AddInputField("HP", "", 4, nil, nil).
 		AddDropDown("Team", []string{"Player", "Ally", "Enemy", "Unknown"}, 0, nil).
 		AddButton("Save", func() {
+			// AddNewCharacter(addNewForm.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
+			// 	addNewForm.GetFormItemByLabel("Init").(*tview.InputField).GetText(),
+			// 	addNewForm.GetFormItemByLabel("HP").(*tview.InputField).GetText(),
+			// 	addNewForm.GetFormItemByLabel("Team").(*tview.DropDown).GetCurrentOption())
 			app.SetFocus(currentBox)
 		}).
 		AddButton("Clear", func() {
+			addNewForm.Clear(false)
 		})
+
+	// addNewForm := tview.NewForm().
+	// 	AddInputField("Name", "", 20, nil, nil).
+	// 	AddInputField("Init", "", 3, nil, nil).
+	// 	AddInputField("HP", "", 4, nil, nil).
+	// 	AddDropDown("Team", []string{"Player", "Ally", "Enemy", "Unknown"}, 0, nil).
+	// 	AddButton("Save", func() {
+	// 		app.SetFocus(currentBox)
+	// 	}).
+	// 	AddButton("Clear", func() {
+	// 		tview.NewForm().Clear(false)
+	// 	})
 
 	list := tview.NewList().
 		AddItem("Add New", "", 'n', func() {
