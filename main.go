@@ -34,19 +34,18 @@ func AddNewCharacter(class Character) {
 // Sort the characters by initiative
 func GetCharactersSorted() []Character {
 	sort.Slice(characters, func(i, j int) bool {
-		// If there's a tie, return enemies, then allies, then players
+		// If there's a tie, return enemies before anyone else
 		if characters[i].Init == characters[j].Init {
-			if characters[i].Team.Id == 2 {
-				return true
-			} else if characters[j].Team.Id == 2 {
-				return false
-			} else if characters[i].Team.Id == 1 {
-				return true
-			} else if characters[j].Team.Id == 1 {
-				return false
-			} else {
+			if characters[i].Team.Id == 2 && characters[j].Team.Id != 2 {
 				return true
 			}
+			if characters[i].Team.Id != 2 && characters[j].Team.Id == 2 {
+				return false
+			}
+		}
+		// If there's a tie between anyone else, sort by Priority
+		if characters[i].Init == characters[j].Init {
+			return characters[i].Priority > characters[j].Priority
 		}
 		return characters[i].Init > characters[j].Init
 	})
