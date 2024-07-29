@@ -123,7 +123,14 @@ func main() {
 			case 3:
 				characterNameColored = "[yellow]" + character.Name + "[-]"
 			}
-			lineItem := strconv.Itoa(character.Init) + ": " + characterNameColored + " (" + strconv.Itoa(character.HP) + ")"
+			hpValue := func() string {
+				if character.HP <= 0 {
+					return ""
+				} else {
+					return " (" + strconv.Itoa(character.HP) + ")"
+				}
+			}
+			lineItem := strconv.Itoa(character.Init) + "   " + characterNameColored + hpValue()
 			displayList.AddItem(lineItem, "", 0, nil)
 		}
 	}
