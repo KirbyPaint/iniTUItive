@@ -31,7 +31,7 @@ func AddNewCharacter(class Character) {
 func GetCharactersSorted() []Character {
 	// Sort the characters by initiative
 	sort.Slice(characters, func(i, j int) bool {
-		return characters[i].Init < characters[j].Init
+		return characters[i].Init > characters[j].Init
 	})
 	return characters
 }
