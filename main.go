@@ -86,14 +86,14 @@ func main() {
 	commandList := tview.NewList()
 
 	// Always focus Add New command for speed
-	FocusCommandsList := func() {
+	focusCommandsList := func() {
 		commandList.SetCurrentItem(0)
 		app.SetFocus(commandList)
 	}
 
 	// Add the return command to the display list first always
 	displayList.AddItem("Return", "", 'r', func() {
-		FocusCommandsList()
+		focusCommandsList()
 	}).SetWrapAround(true)
 
 	// Function to clear the form fields of data
@@ -109,7 +109,7 @@ func main() {
 	refreshDisplayList := func() {
 		displayList.Clear()
 		displayList.AddItem("Return", "", 'r', func() {
-			FocusCommandsList()
+			focusCommandsList()
 		})
 		for _, character := range getCharactersSorted() {
 			var characterNameColored string
@@ -153,7 +153,7 @@ func main() {
 		AddFormItem(teamDropDown).
 		// AddDropDown("Team", []string{"P", "A", "E", "U"}, 0, nil).
 		AddInputField("Prio", "", 2, nil, nil).
-		AddButton("Save", func() {
+		AddButton("S", func() {
 			teamId, teamText := addNewForm.GetFormItemByLabel("Team").(*tview.DropDown).GetCurrentOption()
 			character := Character{
 				ID:   generateID(),
@@ -178,9 +178,9 @@ func main() {
 			addNewCharacter(character)
 			refreshAddNewForm()
 			refreshDisplayList()
-			FocusCommandsList()
+			focusCommandsList()
 		}).
-		AddButton("Clear", func() {
+		AddButton("C", func() {
 			refreshAddNewForm()
 		})
 
@@ -204,7 +204,7 @@ func main() {
 	// Edit a selected character
 	displayList.SetSelectedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
 		if index == 0 {
-			FocusCommandsList()
+			focusCommandsList()
 		} else {
 			character := getCharacterByID(characters[index-1].ID)
 			removeCharacterByID(characters[index-1].ID)
