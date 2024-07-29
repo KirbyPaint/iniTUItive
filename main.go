@@ -56,6 +56,7 @@ func main() {
 	headerBox.SetBorder(true).SetTitle(" Initiative Tracker ")
 	commandList.SetBorder(true).SetTitle(" Commands ")
 
+	// Input form for adding a new character
 	addNewForm.AddInputField("Name", "", 20, nil, nil).
 		AddInputField("Init", "", 3, nil, nil).
 		AddInputField("HP", "", 4, nil, nil).
@@ -78,26 +79,30 @@ func main() {
 				},
 			}
 			AddNewCharacter(character)
+			addNewForm.GetFormItemByLabel("Name").(*tview.InputField).SetText("")
+			addNewForm.GetFormItemByLabel("Init").(*tview.InputField).SetText("")
+			addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetText("")
+			addNewForm.GetFormItemByLabel("Team").(*tview.DropDown).SetCurrentOption(0)
 			app.SetFocus(commandList)
 		}).
 		AddButton("Clear", func() {
-			nameInput := addNewForm.GetFormItemByLabel("Name").(*tview.InputField)
-			initInput := addNewForm.GetFormItemByLabel("Init").(*tview.InputField)
-			hpInput := addNewForm.GetFormItemByLabel("HP").(*tview.InputField)
-			teamInput := addNewForm.GetFormItemByLabel("Team").(*tview.DropDown)
-			nameInput.SetText("")
-			initInput.SetText("")
-			hpInput.SetText("")
-			teamInput.SetCurrentOption(0)
+			addNewForm.GetFormItemByLabel("Name").(*tview.InputField).SetText("")
+			addNewForm.GetFormItemByLabel("Init").(*tview.InputField).SetText("")
+			addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetText("")
+			addNewForm.GetFormItemByLabel("Team").(*tview.DropDown).SetCurrentOption(0)
 		})
 
-	// List of options
+	// Set the numeric input fields to accept only numbers
+	addNewForm.GetFormItemByLabel("Init").(*tview.InputField).SetAcceptanceFunc(tview.InputFieldInteger)
+	addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetAcceptanceFunc(tview.InputFieldInteger)
+
+	// Command list options
 	commandList.AddItem("Add New", "", 'n', func() {
-		app.SetFocus(addNewForm)
 		addNewForm.SetFocus(0)
+		app.SetFocus(addNewForm)
 	})
 	commandList.AddItem("List", "", 'l', func() {
-		app.SetFocus(displayList)
+		// app.SetFocus(displayList)
 		displayList.Clear()
 		for _, character := range GetCharactersSorted() {
 			lineItem := strconv.Itoa(character.Init) + ": " + character.Name + " (" + strconv.Itoa(character.HP) + ")"
@@ -107,9 +112,6 @@ func main() {
 	commandList.AddItem("Exit", "", 'q', func() {
 		app.Stop()
 	})
-
-	// Set the input field to accept only numbers
-	addNewForm.GetFormItemByLabel("Init").(*tview.InputField).SetAcceptanceFunc(tview.InputFieldInteger)
 
 	// Set the layout of components
 	flex := tview.NewFlex().SetDirection(tview.FlexRow).
