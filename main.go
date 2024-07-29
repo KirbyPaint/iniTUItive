@@ -144,14 +144,13 @@ func main() {
 	// Create dropdown
 	teamDropDown := tview.NewDropDown()
 	teamDropDown.SetLabel("Team")
-	teamDropDown.SetOptions([]string{"PLYR", "ALLY", "ENMY", "UNKN"}, nil)
+	teamDropDown.SetOptions([]string{"PLYR", "ALLY", "ENMY", "UNKN"}, nil).SetCurrentOption(0)
 
 	// Input form for adding a new character
 	addNewForm.AddInputField("Name", "", 10, nil, nil).
 		AddInputField("Init", "", 3, nil, nil).
 		AddInputField("HP", "", 4, nil, nil).
 		AddFormItem(teamDropDown).
-		// AddDropDown("Team", []string{"P", "A", "E", "U"}, 0, nil).
 		AddInputField("Prio", "", 2, nil, nil).
 		AddButton("S", func() {
 			teamId, teamText := addNewForm.GetFormItemByLabel("Team").(*tview.DropDown).GetCurrentOption()
@@ -200,6 +199,7 @@ func main() {
 	commandList.AddItem("Exit", "", 'q', func() {
 		app.Stop()
 	})
+	commandList.SetSelectedFocusOnly(true)
 
 	// Edit a selected character
 	displayList.SetSelectedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
@@ -216,7 +216,7 @@ func main() {
 			addNewForm.SetFocus(2)
 			app.SetFocus(addNewForm)
 		}
-	})
+	}).SetSelectedFocusOnly(true)
 
 	// Set the layout of components
 	flex := tview.NewFlex().SetDirection(tview.FlexRow).
