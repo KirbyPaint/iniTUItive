@@ -16,11 +16,12 @@ type Team struct {
 
 // Character struct
 type Character struct {
-	ID   uuid.UUID
-	Name string
-	Init int
-	HP   int
-	Team Team
+	ID       uuid.UUID
+	Name     string
+	Init     int
+	HP       int
+	Priority int
+	Team     Team
 }
 
 var characters []Character
@@ -30,9 +31,23 @@ func AddNewCharacter(class Character) {
 	characters = append(characters, class)
 }
 
+// Sort the characters by initiative
 func GetCharactersSorted() []Character {
-	// Sort the characters by initiative
 	sort.Slice(characters, func(i, j int) bool {
+		// If there's a tie, return enemies, then allies, then players
+		if characters[i].Init == characters[j].Init {
+			if characters[i].Team.Id == 2 {
+				return true
+			} else if characters[j].Team.Id == 2 {
+				return false
+			} else if characters[i].Team.Id == 1 {
+				return true
+			} else if characters[j].Team.Id == 1 {
+				return false
+			} else {
+				return true
+			}
+		}
 		return characters[i].Init > characters[j].Init
 	})
 	return characters
