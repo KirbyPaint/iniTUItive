@@ -36,10 +36,6 @@ func GetCharactersSorted() []Character {
 	return characters
 }
 
-func GetFocusedElement() string {
-	return ""
-}
-
 func main() {
 	// The base application
 	app := tview.NewApplication()
@@ -49,6 +45,23 @@ func main() {
 	displayList := tview.NewList()
 	headerBox := tview.NewBox()
 	commandList := tview.NewList()
+
+	// Clear the form fields of data
+	RefreshAddNewForm := func() {
+		addNewForm.GetFormItemByLabel("Name").(*tview.InputField).SetText("")
+		addNewForm.GetFormItemByLabel("Init").(*tview.InputField).SetText("")
+		addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetText("")
+		addNewForm.GetFormItemByLabel("Team").(*tview.DropDown).SetCurrentOption(0)
+	}
+
+	// Re-sort the display list
+	RefreshDisplayList := func() {
+		displayList.Clear()
+		for _, character := range GetCharactersSorted() {
+			lineItem := strconv.Itoa(character.Init) + ": " + character.Name + " (" + strconv.Itoa(character.HP) + ")"
+			displayList.AddItem(lineItem, character.Team.Text, 0, nil)
+		}
+	}
 
 	// Add styling
 	addNewForm.SetHorizontal(true).SetBorder(true).SetTitle(" Add New Line ")
@@ -79,17 +92,12 @@ func main() {
 				},
 			}
 			AddNewCharacter(character)
-			addNewForm.GetFormItemByLabel("Name").(*tview.InputField).SetText("")
-			addNewForm.GetFormItemByLabel("Init").(*tview.InputField).SetText("")
-			addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetText("")
-			addNewForm.GetFormItemByLabel("Team").(*tview.DropDown).SetCurrentOption(0)
+			RefreshAddNewForm()
+			RefreshDisplayList()
 			app.SetFocus(commandList)
 		}).
 		AddButton("Clear", func() {
-			addNewForm.GetFormItemByLabel("Name").(*tview.InputField).SetText("")
-			addNewForm.GetFormItemByLabel("Init").(*tview.InputField).SetText("")
-			addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetText("")
-			addNewForm.GetFormItemByLabel("Team").(*tview.DropDown).SetCurrentOption(0)
+			RefreshAddNewForm()
 		})
 
 	// Set the numeric input fields to accept only numbers
@@ -102,12 +110,7 @@ func main() {
 		app.SetFocus(addNewForm)
 	})
 	commandList.AddItem("List", "", 'l', func() {
-		// app.SetFocus(displayList)
-		displayList.Clear()
-		for _, character := range GetCharactersSorted() {
-			lineItem := strconv.Itoa(character.Init) + ": " + character.Name + " (" + strconv.Itoa(character.HP) + ")"
-			displayList.AddItem(lineItem, "", 0, nil)
-		}
+		RefreshDisplayList()
 	})
 	commandList.AddItem("Exit", "", 'q', func() {
 		app.Stop()
