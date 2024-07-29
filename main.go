@@ -27,12 +27,12 @@ type Character struct {
 var characters []Character
 
 // Add a new character to the list
-func AddNewCharacter(class Character) {
+func addNewCharacter(class Character) {
 	characters = append(characters, class)
 }
 
 // Sort the characters by initiative
-func GetCharactersSorted() []Character {
+func getCharactersSorted() []Character {
 	sort.Slice(characters, func(i, j int) bool {
 		// If there's a tie, return enemies before anyone else
 		if characters[i].Init == characters[j].Init {
@@ -52,7 +52,7 @@ func GetCharactersSorted() []Character {
 	return characters
 }
 
-func GetCharacterByID(id uuid.UUID) Character {
+func getCharacterByID(id uuid.UUID) Character {
 	for _, character := range characters {
 		if character.ID == id {
 			return character
@@ -61,7 +61,7 @@ func GetCharacterByID(id uuid.UUID) Character {
 	return Character{}
 }
 
-func RemoveCharacterByID(id uuid.UUID) {
+func removeCharacterByID(id uuid.UUID) {
 	for i, character := range characters {
 		if character.ID == id {
 			characters = append(characters[:i], characters[i+1:]...)
@@ -70,7 +70,7 @@ func RemoveCharacterByID(id uuid.UUID) {
 	}
 }
 
-func GenerateID() uuid.UUID {
+func generateID() uuid.UUID {
 	id := uuid.New()
 	return id
 }
@@ -79,23 +79,25 @@ func main() {
 	// The base application
 	app := tview.NewApplication()
 
-	// The components
+	// The main components
 	addNewForm := tview.NewForm()
 	displayList := tview.NewList()
 	headerBox := tview.NewBox()
 	commandList := tview.NewList()
 
+	// Always focus Add New command for speed
 	FocusCommandsList := func() {
 		commandList.SetCurrentItem(0)
 		app.SetFocus(commandList)
 	}
 
+	// Add the return command to the display list first always
 	displayList.AddItem("Return", "", 'r', func() {
 		FocusCommandsList()
 	}).SetWrapAround(true)
 
-	// Clear the form fields of data
-	RefreshAddNewForm := func() {
+	// Function to clear the form fields of data
+	refreshAddNewForm := func() {
 		addNewForm.GetFormItemByLabel("Name").(*tview.InputField).SetText("")
 		addNewForm.GetFormItemByLabel("Init").(*tview.InputField).SetText("")
 		addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetText("")
@@ -103,13 +105,13 @@ func main() {
 		addNewForm.GetFormItemByLabel("Prio").(*tview.InputField).SetText("")
 	}
 
-	// Re-sort the display list
-	RefreshDisplayList := func() {
+	// Function to re-sort the display list
+	refreshDisplayList := func() {
 		displayList.Clear()
 		displayList.AddItem("Return", "", 'r', func() {
 			FocusCommandsList()
 		})
-		for _, character := range GetCharactersSorted() {
+		for _, character := range getCharactersSorted() {
 			var characterNameColored string
 			switch character.Team.Id {
 			case 0:
@@ -132,16 +134,22 @@ func main() {
 	headerBox.SetBorder(true).SetTitle(" Initiative Tracker ")
 	commandList.SetBorder(true).SetTitle(" Commands ")
 
+	// Create dropdown
+	teamDropDown := tview.NewDropDown()
+	teamDropDown.SetLabel("Team")
+	teamDropDown.SetOptions([]string{"PLYR", "ALLY", "ENMY", "UNKN"}, nil)
+
 	// Input form for adding a new character
 	addNewForm.AddInputField("Name", "", 10, nil, nil).
 		AddInputField("Init", "", 3, nil, nil).
 		AddInputField("HP", "", 4, nil, nil).
-		AddDropDown("Team", []string{"Player", "Ally", "Enemy", "Unknown"}, 0, nil).
+		AddFormItem(teamDropDown).
+		// AddDropDown("Team", []string{"P", "A", "E", "U"}, 0, nil).
 		AddInputField("Prio", "", 2, nil, nil).
 		AddButton("Save", func() {
 			teamId, teamText := addNewForm.GetFormItemByLabel("Team").(*tview.DropDown).GetCurrentOption()
 			character := Character{
-				ID:   GenerateID(),
+				ID:   generateID(),
 				Name: addNewForm.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
 				Init: func() int {
 					i, _ := strconv.Atoi(addNewForm.GetFormItemByLabel("Init").(*tview.InputField).GetText())
@@ -160,13 +168,13 @@ func main() {
 					return i
 				}(),
 			}
-			AddNewCharacter(character)
-			RefreshAddNewForm()
-			RefreshDisplayList()
+			addNewCharacter(character)
+			refreshAddNewForm()
+			refreshDisplayList()
 			FocusCommandsList()
 		}).
 		AddButton("Clear", func() {
-			RefreshAddNewForm()
+			refreshAddNewForm()
 		})
 
 	// Set the numeric input fields to accept only numbers
@@ -191,8 +199,8 @@ func main() {
 		if index == 0 {
 			FocusCommandsList()
 		} else {
-			character := GetCharacterByID(characters[index-1].ID)
-			RemoveCharacterByID(characters[index-1].ID)
+			character := getCharacterByID(characters[index-1].ID)
+			removeCharacterByID(characters[index-1].ID)
 			addNewForm.GetFormItemByLabel("Name").(*tview.InputField).SetText(character.Name)
 			addNewForm.GetFormItemByLabel("Init").(*tview.InputField).SetText(strconv.Itoa(character.Init))
 			addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetText(strconv.Itoa(character.HP))
