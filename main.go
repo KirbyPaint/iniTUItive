@@ -4,6 +4,7 @@ import (
 	"sort"
 	"strconv"
 
+	"github.com/google/uuid"
 	"github.com/rivo/tview"
 )
 
@@ -15,6 +16,7 @@ type Team struct {
 
 // Character struct
 type Character struct {
+	ID   uuid.UUID
 	Name string
 	Init int
 	HP   int
@@ -36,6 +38,29 @@ func GetCharactersSorted() []Character {
 	return characters
 }
 
+func GetCharacterByID(id uuid.UUID) Character {
+	for _, character := range characters {
+		if character.ID == id {
+			return character
+		}
+	}
+	return Character{}
+}
+
+func RemoveCharacterByID(id uuid.UUID) {
+	for i, character := range characters {
+		if character.ID == id {
+			characters = append(characters[:i], characters[i+1:]...)
+			break
+		}
+	}
+}
+
+func GenerateID() uuid.UUID {
+	id := uuid.New()
+	return id
+}
+
 func main() {
 	// The base application
 	app := tview.NewApplication()
@@ -45,6 +70,10 @@ func main() {
 	displayList := tview.NewList()
 	headerBox := tview.NewBox()
 	commandList := tview.NewList()
+
+	displayList.AddItem("Return", "", 'r', func() {
+		app.SetFocus(commandList)
+	}).SetWrapAround(true)
 
 	// Clear the form fields of data
 	RefreshAddNewForm := func() {
@@ -57,9 +86,23 @@ func main() {
 	// Re-sort the display list
 	RefreshDisplayList := func() {
 		displayList.Clear()
+		displayList.AddItem("Return", "", 'r', func() {
+			app.SetFocus(commandList)
+		})
 		for _, character := range GetCharactersSorted() {
-			lineItem := strconv.Itoa(character.Init) + ": " + character.Name + " (" + strconv.Itoa(character.HP) + ")"
-			displayList.AddItem(lineItem, character.Team.Text, 0, nil)
+			var characterNameColored string
+			switch character.Team.Id {
+			case 0:
+				characterNameColored = "[blue]" + character.Name + "[-]"
+			case 1:
+				characterNameColored = "[green]" + character.Name + "[-]"
+			case 2:
+				characterNameColored = "[red]" + character.Name + "[-]"
+			case 3:
+				characterNameColored = "[yellow]" + character.Name + "[-]"
+			}
+			lineItem := strconv.Itoa(character.Init) + ": " + characterNameColored + " (" + strconv.Itoa(character.HP) + ")"
+			displayList.AddItem(lineItem, "", 0, nil)
 		}
 	}
 
@@ -77,6 +120,7 @@ func main() {
 		AddButton("Save", func() {
 			teamId, teamText := addNewForm.GetFormItemByLabel("Team").(*tview.DropDown).GetCurrentOption()
 			character := Character{
+				ID:   GenerateID(),
 				Name: addNewForm.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
 				Init: func() int {
 					i, _ := strconv.Atoi(addNewForm.GetFormItemByLabel("Init").(*tview.InputField).GetText())
@@ -110,10 +154,26 @@ func main() {
 		app.SetFocus(addNewForm)
 	})
 	commandList.AddItem("List", "", 'l', func() {
-		RefreshDisplayList()
+		app.SetFocus(displayList)
 	})
 	commandList.AddItem("Exit", "", 'q', func() {
 		app.Stop()
+	})
+
+	// Edit a selected character
+	displayList.SetSelectedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
+		if index == 0 {
+			app.SetFocus(commandList)
+		} else {
+			character := GetCharacterByID(characters[index-1].ID)
+			RemoveCharacterByID(characters[index-1].ID)
+			addNewForm.GetFormItemByLabel("Name").(*tview.InputField).SetText(character.Name)
+			addNewForm.GetFormItemByLabel("Init").(*tview.InputField).SetText(strconv.Itoa(character.Init))
+			addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetText(strconv.Itoa(character.HP))
+			addNewForm.GetFormItemByLabel("Team").(*tview.DropDown).SetCurrentOption(character.Team.Id)
+			addNewForm.SetFocus(2)
+			app.SetFocus(addNewForm)
+		}
 	})
 
 	// Set the layout of components
