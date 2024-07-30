@@ -197,7 +197,7 @@ func main() {
 		app.Stop()
 	}).SetSelectedFocusOnly(true)
 
-	// Edit a selected character
+	// Edit a selected character with Enter
 	displayList.SetSelectedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
 		if index == 0 {
 			focusCommandsList()
@@ -209,10 +209,13 @@ func main() {
 			addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetText(strconv.Itoa(character.HP))
 			addNewForm.GetFormItemByLabel("Team").(*tview.DropDown).SetCurrentOption(character.Team.Id)
 			addNewForm.GetFormItemByLabel("Prio").(*tview.InputField).SetText(strconv.Itoa(character.Priority))
-			addNewForm.SetFocus(2)
+			addNewForm.SetFocus(2) // focuses HP since that is most likely to be edited
 			app.SetFocus(addNewForm)
 		}
 	}).SetSelectedFocusOnly(true)
+
+	// If d is pressed on a list item remove it
+	// displayList.RemoveItem(displayList.GetCurrentItem()).SetSelectedFocusOnly(true)
 
 	// Set the layout of components
 	flex := tview.NewFlex().SetDirection(tview.FlexRow).
