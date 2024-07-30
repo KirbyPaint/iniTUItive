@@ -1,4 +1,4 @@
-# IniTUItive Tracker 1.0
+# IniTUItive Tracker
 
 ![application image](https://github.com/KirbyPaint/iniTUItive/blob/main/img/example_many.png?raw=true)
 
