@@ -141,10 +141,9 @@ func main() {
 	headerBox.SetBorder(true).SetTitle(" Initiative Tracker ")
 	commandList.SetBorder(true).SetTitle(" Commands ")
 
-	// Create dropdown
+	// Create dropdown and add options
 	teamDropDown := tview.NewDropDown()
-	teamDropDown.SetLabel("Team")
-	teamDropDown.SetOptions([]string{"PLYR", "ALLY", "ENMY", "UNKN"}, nil).SetCurrentOption(0)
+	teamDropDown.SetLabel("Team").SetOptions([]string{"PLYR", "ALLY", "ENMY", "UNKN"}, nil).SetCurrentOption(0)
 
 	// Input form for adding a new character
 	addNewForm.AddInputField("Name", "", 10, nil, nil).
@@ -188,18 +187,15 @@ func main() {
 	addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetAcceptanceFunc(tview.InputFieldInteger)
 	addNewForm.GetFormItemByLabel("Prio").(*tview.InputField).SetAcceptanceFunc(tview.InputFieldInteger)
 
-	// Command list options
+	// Command list buttons
 	commandList.AddItem("Add New", "", 'n', func() {
 		addNewForm.SetFocus(0)
 		app.SetFocus(addNewForm)
-	})
-	commandList.AddItem("List", "", 'l', func() {
+	}).AddItem("List", "", 'l', func() {
 		app.SetFocus(displayList)
-	})
-	commandList.AddItem("Exit", "", 'q', func() {
+	}).AddItem("Exit", "", 'q', func() {
 		app.Stop()
-	})
-	commandList.SetSelectedFocusOnly(true)
+	}).SetSelectedFocusOnly(true)
 
 	// Edit a selected character
 	displayList.SetSelectedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
