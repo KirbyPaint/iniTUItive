@@ -172,7 +172,10 @@ func main() {
 			refreshAddNewForm()
 			addNewForm.SetFocus(0)
 			app.SetFocus(addNewForm)
-		})
+		}).SetCancelFunc(func() {
+		refreshAddNewForm()
+		focusCommandsList()
+	})
 
 	addNewForm.GetFormItemByLabel("Init").(*tview.InputField).SetAcceptanceFunc(tview.InputFieldInteger)
 	addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetAcceptanceFunc(tview.InputFieldInteger)
@@ -198,7 +201,7 @@ func main() {
 			addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetText(strconv.Itoa(character.HP))
 			addNewForm.GetFormItemByLabel("Team").(*tview.DropDown).SetCurrentOption(character.Team.Id)
 			addNewForm.GetFormItemByLabel("Prio").(*tview.InputField).SetText(strconv.Itoa(character.Priority))
-			addNewForm.AddButton("D", func() {
+			addNewForm.AddButton("[white:red]D[-]", func() {
 				removeCharacterByID(character.ID)
 				refreshAddNewForm()
 				refreshDisplayList()
