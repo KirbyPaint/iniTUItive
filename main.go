@@ -212,7 +212,7 @@ func main() {
 	flex := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(headerBox, 2, 1, false).
 		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(commandList, 0, 1, false).
+			AddItem(commandList, 16, 1, false).
 			AddItem(displayList, 0, 2, false), 0, 2, false).
 		AddItem(addNewForm, 5, 1, false)
 
