@@ -8,13 +8,11 @@ import (
 	"github.com/rivo/tview"
 )
 
-// Team struct
 type Team struct {
 	Id   int
 	Text string
 }
 
-// Character struct
 type Character struct {
 	ID       uuid.UUID
 	Name     string
@@ -26,12 +24,10 @@ type Character struct {
 
 var characters []Character
 
-// Add a new character to the list
 func addNewCharacter(class Character) {
 	characters = append(characters, class)
 }
 
-// Sort the characters by initiative
 func getCharactersSorted() []Character {
 	sort.Slice(characters, func(i, j int) bool {
 		// If there's a tie, return enemies before anyone else
@@ -43,7 +39,6 @@ func getCharactersSorted() []Character {
 				return false
 			}
 		}
-		// Then if there's a tie between anyone else, sort by Priority
 		if characters[i].Init == characters[j].Init {
 			return characters[i].Priority > characters[j].Priority
 		}
@@ -76,27 +71,22 @@ func generateID() uuid.UUID {
 }
 
 func main() {
-	// The base application
 	app := tview.NewApplication()
 
-	// The main components
 	addNewForm := tview.NewForm()
 	displayList := tview.NewList()
 	headerBox := tview.NewBox()
 	commandList := tview.NewList()
 
-	// Always focus Add New command for speed
 	focusCommandsList := func() {
 		commandList.SetCurrentItem(0)
 		app.SetFocus(commandList)
 	}
 
-	// Add the return command to the display list first always
 	displayList.AddItem("Return", "", 'r', func() {
 		focusCommandsList()
 	}).SetWrapAround(true)
 
-	// Function to clear the form fields of data and reset the buttons
 	refreshAddNewForm := func() {
 		deleteButtonIndex := addNewForm.GetButtonIndex("D")
 		if deleteButtonIndex != -1 {
@@ -109,7 +99,6 @@ func main() {
 		addNewForm.GetFormItemByLabel("Prio").(*tview.InputField).SetText("")
 	}
 
-	// Function to re-sort the display list
 	refreshDisplayList := func() {
 		displayList.Clear()
 		displayList.AddItem("Return", "", 'r', func() {
@@ -139,17 +128,14 @@ func main() {
 		}
 	}
 
-	// Add styling
 	addNewForm.SetHorizontal(true).SetBorder(true).SetTitle(" Add New Line ")
 	displayList.SetBorder(true).SetTitle(" Initiative ")
 	headerBox.SetBorder(true).SetTitle(" Initiative Tracker ")
 	commandList.SetBorder(true).SetTitle(" Commands ")
 
-	// Create dropdown and add options
 	teamDropDown := tview.NewDropDown()
 	teamDropDown.SetLabel("Team").SetOptions([]string{"PLYR", "ALLY", "ENMY", "UNKN"}, nil).SetCurrentOption(0)
 
-	// Input form for adding a new character
 	addNewForm.AddInputField("Name", "", 10, nil, nil).
 		AddInputField("Init", "", 3, nil, nil).
 		AddInputField("HP", "", 4, nil, nil).
@@ -184,14 +170,14 @@ func main() {
 		}).
 		AddButton("C", func() {
 			refreshAddNewForm()
+			addNewForm.SetFocus(0)
+			app.SetFocus(addNewForm)
 		})
 
-	// Set the numeric input fields to accept only numbers
 	addNewForm.GetFormItemByLabel("Init").(*tview.InputField).SetAcceptanceFunc(tview.InputFieldInteger)
 	addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetAcceptanceFunc(tview.InputFieldInteger)
 	addNewForm.GetFormItemByLabel("Prio").(*tview.InputField).SetAcceptanceFunc(tview.InputFieldInteger)
 
-	// Command list buttons
 	commandList.AddItem("Add New", "", 'n', func() {
 		addNewForm.SetFocus(0)
 		app.SetFocus(addNewForm)
@@ -201,7 +187,6 @@ func main() {
 		app.Stop()
 	}).SetSelectedFocusOnly(true)
 
-	// Edit a selected character with Enter
 	displayList.SetSelectedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
 		if index == 0 {
 			focusCommandsList()
@@ -214,7 +199,6 @@ func main() {
 			addNewForm.GetFormItemByLabel("Team").(*tview.DropDown).SetCurrentOption(character.Team.Id)
 			addNewForm.GetFormItemByLabel("Prio").(*tview.InputField).SetText(strconv.Itoa(character.Priority))
 			addNewForm.AddButton("D", func() {
-				// Delete the character we are editing
 				removeCharacterByID(character.ID)
 				refreshAddNewForm()
 				refreshDisplayList()
@@ -225,7 +209,6 @@ func main() {
 		}
 	}).SetSelectedFocusOnly(true)
 
-	// Set the layout of components
 	flex := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(headerBox, 2, 1, false).
 		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
@@ -233,7 +216,6 @@ func main() {
 			AddItem(displayList, 0, 2, false), 0, 2, false).
 		AddItem(addNewForm, 5, 1, false)
 
-	// Run the application
 	if err := app.SetRoot(flex, true).SetFocus(commandList).Run(); err != nil {
 		panic(err)
 	}
