@@ -1,5 +1,7 @@
 # IniTUItive Tracker 1.0
 
+![application image](https://github.com/KirbyPaint/iniTUItive/blob/main/img/example_many.png?raw=true)
+
 ## Table of Contents
 
 1. [Introduction](#introduction)
@@ -37,7 +39,12 @@ Commands:
 ```
 
 When adding or editing a character, you can enter their name, initiative bonus, and any other relevant information. The Initiative and HP fields accept integers only. The Team field is optional and can be used to group combatants together. The four Teams are Player (blue), Enemy (red), Ally (green), and Neutral (yellow), and the selected Team will cause that character's name to render in the terminal with that color. In Pathfinder 2e, in the case of a tie, Enemies attack first, so the program will automatically sort the initiative order to reflect this. Should two characters have the same initiative, you may set their order manually by entering a number in the Priority field. The higher the number, the earlier the character will act in the case of a tie. The buttons following the input fields are Save and Clear, respectively. Save will save the character to the initiative order, and Clear will clear the input fields for re-entry.  
-When selecting a character for editing, a new button will appear: Delete. This button will remove the selected character from the initiative order.
+![image showing input fields and team labels](https://github.com/KirbyPaint/iniTUItive/blob/main/img/example_1.png?raw=true)
+When selecting a character for editing, a new button will appear: Delete. This button will remove the selected character from the initiative order.  
+
+![image showing example with priority input and visible delete button](https://github.com/KirbyPaint/iniTUItive/blob/main/img/example_with_delete.png?raw=true)  
+
+There are a few other sample images in the [img](/img) directory.
 
 ## Contributing
 
