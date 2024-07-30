@@ -201,7 +201,7 @@ func main() {
 			characterInputForm.GetFormItemByLabel("HP").(*tview.InputField).SetText(strconv.Itoa(character.HP))
 			characterInputForm.GetFormItemByLabel("Team").(*tview.DropDown).SetCurrentOption(character.Team.Id)
 			characterInputForm.GetFormItemByLabel("Prio").(*tview.InputField).SetText(strconv.Itoa(character.Priority))
-			characterInputForm.AddButton("[white:red]D[-]", func() {
+			characterInputForm.AddButton("D", func() {
 				removeCharacterByID(character.ID)
 				refreshAndFocusInitiativeList()
 			})
