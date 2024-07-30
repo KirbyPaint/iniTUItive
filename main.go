@@ -73,35 +73,31 @@ func generateID() uuid.UUID {
 func main() {
 	app := tview.NewApplication()
 
-	addNewForm := tview.NewForm()
-	displayList := tview.NewList()
+	characterInputForm := tview.NewForm()
+	initiativeList := tview.NewList()
 	headerBox := tview.NewBox()
-	commandList := tview.NewList()
+	commandsList := tview.NewList()
 
 	focusCommandsList := func() {
-		commandList.SetCurrentItem(0)
-		app.SetFocus(commandList)
+		commandsList.SetCurrentItem(0)
+		app.SetFocus(commandsList)
 	}
 
-	// displayList.AddItem("Return", "", 'r', func() {
-	// 	focusCommandsList()
-	// }).SetWrapAround(true)
-
-	refreshAddNewForm := func() {
-		deleteButtonIndex := addNewForm.GetButtonIndex("D")
+	refreshCharacterInputForm := func() {
+		deleteButtonIndex := characterInputForm.GetButtonIndex("D")
 		if deleteButtonIndex != -1 {
-			addNewForm.RemoveButton(deleteButtonIndex)
+			characterInputForm.RemoveButton(deleteButtonIndex)
 		}
-		addNewForm.GetFormItemByLabel("Name").(*tview.InputField).SetText("")
-		addNewForm.GetFormItemByLabel("Init").(*tview.InputField).SetText("")
-		addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetText("")
-		addNewForm.GetFormItemByLabel("Team").(*tview.DropDown).SetCurrentOption(0)
-		addNewForm.GetFormItemByLabel("Prio").(*tview.InputField).SetText("")
+		characterInputForm.GetFormItemByLabel("Name").(*tview.InputField).SetText("")
+		characterInputForm.GetFormItemByLabel("Init").(*tview.InputField).SetText("")
+		characterInputForm.GetFormItemByLabel("HP").(*tview.InputField).SetText("")
+		characterInputForm.GetFormItemByLabel("Team").(*tview.DropDown).SetCurrentOption(0)
+		characterInputForm.GetFormItemByLabel("Prio").(*tview.InputField).SetText("")
 	}
 
 	renderInitiativeList := func() {
-		displayList.Clear()
-		displayList.AddItem("Return", "", 'r', func() {
+		initiativeList.Clear()
+		initiativeList.AddItem("Return", "", 'r', func() {
 			focusCommandsList()
 		}).SetWrapAround(true)
 		for _, character := range getCharactersSorted() {
@@ -124,40 +120,40 @@ func main() {
 				}
 			}
 			lineItem := strconv.Itoa(character.Init) + "   " + characterNameColored + hpValue()
-			displayList.AddItem(lineItem, "", 0, nil)
+			initiativeList.AddItem(lineItem, "", 0, nil)
 		}
 	}
 
-	refreshAndFocusDisplayList := func() {
-		refreshAddNewForm()
+	refreshAndFocusInitiativeList := func() {
+		refreshCharacterInputForm()
 		renderInitiativeList()
 		focusCommandsList()
 	}
 
-	addNewForm.SetHorizontal(true).SetBorder(true).SetTitle(" Add New Line ")
-	displayList.SetBorder(true).SetTitle(" Initiative ")
+	characterInputForm.SetHorizontal(true).SetBorder(true).SetTitle(" Add New Line ")
+	initiativeList.SetBorder(true).SetTitle(" Initiative ")
 	headerBox.SetBorder(true).SetTitle(" Initiative Tracker ")
-	commandList.SetBorder(true).SetTitle(" Commands ")
+	commandsList.SetBorder(true).SetTitle(" Commands ")
 
 	teamDropDown := tview.NewDropDown()
 	teamDropDown.SetLabel("Team").SetOptions([]string{"PLYR", "ALLY", "ENMY", "UNKN"}, nil).SetCurrentOption(0)
 
-	addNewForm.AddInputField("Name", "", 10, nil, nil).
+	characterInputForm.AddInputField("Name", "", 10, nil, nil).
 		AddInputField("Init", "", 3, nil, nil).
 		AddInputField("HP", "", 4, nil, nil).
 		AddFormItem(teamDropDown).
 		AddInputField("Prio", "", 2, nil, nil).
 		AddButton("S", func() {
-			teamId, teamText := addNewForm.GetFormItemByLabel("Team").(*tview.DropDown).GetCurrentOption()
+			teamId, teamText := characterInputForm.GetFormItemByLabel("Team").(*tview.DropDown).GetCurrentOption()
 			character := Character{
 				ID:   generateID(),
-				Name: addNewForm.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
+				Name: characterInputForm.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
 				Init: func() int {
-					i, _ := strconv.Atoi(addNewForm.GetFormItemByLabel("Init").(*tview.InputField).GetText())
+					i, _ := strconv.Atoi(characterInputForm.GetFormItemByLabel("Init").(*tview.InputField).GetText())
 					return i
 				}(),
 				HP: func() int {
-					i, _ := strconv.Atoi(addNewForm.GetFormItemByLabel("HP").(*tview.InputField).GetText())
+					i, _ := strconv.Atoi(characterInputForm.GetFormItemByLabel("HP").(*tview.InputField).GetText())
 					return i
 				}(),
 				Team: Team{
@@ -165,65 +161,65 @@ func main() {
 					Text: teamText,
 				},
 				Priority: func() int {
-					i, _ := strconv.Atoi(addNewForm.GetFormItemByLabel("Prio").(*tview.InputField).GetText())
+					i, _ := strconv.Atoi(characterInputForm.GetFormItemByLabel("Prio").(*tview.InputField).GetText())
 					return i
 				}(),
 			}
 			addNewCharacter(character)
-			refreshAndFocusDisplayList()
+			refreshAndFocusInitiativeList()
 		}).
 		AddButton("C", func() {
-			refreshAddNewForm()
-			addNewForm.SetFocus(0)
-			app.SetFocus(addNewForm)
+			refreshCharacterInputForm()
+			characterInputForm.SetFocus(0)
+			app.SetFocus(characterInputForm)
 		}).SetCancelFunc(func() {
-		refreshAddNewForm()
+		refreshCharacterInputForm()
 		focusCommandsList()
 	})
 
-	addNewForm.GetFormItemByLabel("Init").(*tview.InputField).SetAcceptanceFunc(tview.InputFieldInteger)
-	addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetAcceptanceFunc(tview.InputFieldInteger)
-	addNewForm.GetFormItemByLabel("Prio").(*tview.InputField).SetAcceptanceFunc(tview.InputFieldInteger)
+	characterInputForm.GetFormItemByLabel("Init").(*tview.InputField).SetAcceptanceFunc(tview.InputFieldInteger)
+	characterInputForm.GetFormItemByLabel("HP").(*tview.InputField).SetAcceptanceFunc(tview.InputFieldInteger)
+	characterInputForm.GetFormItemByLabel("Prio").(*tview.InputField).SetAcceptanceFunc(tview.InputFieldInteger)
 
-	commandList.AddItem("Add New", "", 'n', func() {
-		addNewForm.SetFocus(0)
-		app.SetFocus(addNewForm)
+	commandsList.AddItem("Add New", "", 'n', func() {
+		characterInputForm.SetFocus(0)
+		app.SetFocus(characterInputForm)
 	}).AddItem("List", "", 'l', func() {
-		app.SetFocus(displayList)
+		app.SetFocus(initiativeList)
 	}).AddItem("Exit", "", 'q', func() {
 		app.Stop()
 	}).SetSelectedFocusOnly(true)
 
-	displayList.SetSelectedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
+	initiativeList.SetSelectedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
 		if index == 0 {
 			focusCommandsList()
 		} else {
 			character := getCharacterByID(characters[index-1].ID)
 			removeCharacterByID(characters[index-1].ID)
-			addNewForm.GetFormItemByLabel("Name").(*tview.InputField).SetText(character.Name)
-			addNewForm.GetFormItemByLabel("Init").(*tview.InputField).SetText(strconv.Itoa(character.Init))
-			addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetText(strconv.Itoa(character.HP))
-			addNewForm.GetFormItemByLabel("Team").(*tview.DropDown).SetCurrentOption(character.Team.Id)
-			addNewForm.GetFormItemByLabel("Prio").(*tview.InputField).SetText(strconv.Itoa(character.Priority))
-			addNewForm.AddButton("[white:red]D[-]", func() {
+			characterInputForm.GetFormItemByLabel("Name").(*tview.InputField).SetText(character.Name)
+			characterInputForm.GetFormItemByLabel("Init").(*tview.InputField).SetText(strconv.Itoa(character.Init))
+			characterInputForm.GetFormItemByLabel("HP").(*tview.InputField).SetText(strconv.Itoa(character.HP))
+			characterInputForm.GetFormItemByLabel("Team").(*tview.DropDown).SetCurrentOption(character.Team.Id)
+			characterInputForm.GetFormItemByLabel("Prio").(*tview.InputField).SetText(strconv.Itoa(character.Priority))
+			characterInputForm.AddButton("[white:red]D[-]", func() {
 				removeCharacterByID(character.ID)
-				refreshAndFocusDisplayList()
+				refreshAndFocusInitiativeList()
 			})
-			addNewForm.SetFocus(2) // focuses HP since that is most likely to be edited
-			app.SetFocus(addNewForm)
+			characterInputForm.SetFocus(2) // focuses HP since that is most likely to be edited
+			app.SetFocus(characterInputForm)
 		}
 	}).SetSelectedFocusOnly(true)
 
 	flex := tview.NewFlex().SetDirection(tview.FlexRow).
 		AddItem(headerBox, 2, 1, false).
 		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
-			AddItem(commandList, 16, 1, false).
-			AddItem(displayList, 0, 2, false), 0, 2, false).
-		AddItem(addNewForm, 5, 1, false)
+			AddItem(commandsList, 16, 1, false).
+			AddItem(initiativeList, 0, 2, false), 0, 2, false).
+		AddItem(characterInputForm, 5, 1, false)
 
 	renderInitiativeList()
 
-	if err := app.SetRoot(flex, true).SetFocus(commandList).Run(); err != nil {
+	if err := app.SetRoot(flex, true).SetFocus(commandsList).Run(); err != nil {
 		panic(err)
 	}
 }
