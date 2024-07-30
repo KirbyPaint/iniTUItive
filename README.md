@@ -45,8 +45,7 @@ If you would like to contribute to IniTUItive Tracker, please submit a pull requ
 
 ## License
 
-IniTUItive Tracker is licensed under the [MIT License](
-). You are free to use, modify, and distribute this software as you see fit. I only ask that you include the original license and attribution in your distribution.
+IniTUItive Tracker is licensed under the [MIT License](LICENSE). You are free to use, modify, and distribute this software as you see fit. I only ask that you include the original license and attribution in your distribution.
 
 ## Contact
 
