@@ -1,115 +1,227 @@
 package main
 
 import (
-	"github.com/gdamore/tcell/v2"
+	"sort"
+	"strconv"
+
+	"github.com/google/uuid"
 	"github.com/rivo/tview"
 )
 
-var states = []string{"AK", "AL", "AR", "AZ", "CA", "CO", "CT", "DC", "DE", "FL", "GA",
-	"HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME",
-	"MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM",
-	"NV", "NY", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX",
-	"UT", "VA", "VT", "WA", "WI", "WV", "WY"}
-
-type Contact struct {
-	firstName   string
-	lastName    string
-	email       string
-	phoneNumber string
-	state       string
-	business    bool
+type Team struct {
+	Id   int
+	Text string
 }
 
-var contacts = make([]Contact, 0)
+type Character struct {
+	ID       uuid.UUID
+	Name     string
+	Init     int
+	HP       int
+	Priority int
+	Team     Team
+}
 
-// Tview
-var pages = tview.NewPages()
-var contactText = tview.NewTextView()
-var app = tview.NewApplication()
-var form = tview.NewForm()
-var contactsList = tview.NewList().ShowSecondaryText(false)
-var flex = tview.NewFlex()
-var text = tview.NewTextView().
-	SetTextColor(tcell.ColorGreen).
-	SetText("(a) to add a new contact \n(q) to quit")
+var characters []Character
+
+func addNewCharacter(class Character) {
+	characters = append(characters, class)
+}
+
+func getCharactersSorted() []Character {
+	sort.Slice(characters, func(i, j int) bool {
+		// If there's a tie, return enemies before anyone else
+		if characters[i].Init == characters[j].Init {
+			if characters[i].Team.Id == 2 && characters[j].Team.Id != 2 {
+				return true
+			}
+			if characters[i].Team.Id != 2 && characters[j].Team.Id == 2 {
+				return false
+			}
+		}
+		if characters[i].Init == characters[j].Init {
+			return characters[i].Priority > characters[j].Priority
+		}
+		return characters[i].Init > characters[j].Init
+	})
+	return characters
+}
+
+func getCharacterByID(id uuid.UUID) Character {
+	for _, character := range characters {
+		if character.ID == id {
+			return character
+		}
+	}
+	return Character{}
+}
+
+func removeCharacterByID(id uuid.UUID) {
+	for i, character := range characters {
+		if character.ID == id {
+			characters = append(characters[:i], characters[i+1:]...)
+			break
+		}
+	}
+}
+
+func generateID() uuid.UUID {
+	id := uuid.New()
+	return id
+}
 
 func main() {
-	contactsList.SetSelectedFunc(func(index int, name string, second_name string, shortcut rune) {
-		setConcatText(&contacts[index])
-	})
+	app := tview.NewApplication()
 
-	flex.SetDirection(tview.FlexRow).
-		AddItem(tview.NewFlex().
-			AddItem(contactsList, 0, 1, true).
-			AddItem(contactText, 0, 4, false), 0, 6, false).
-		AddItem(text, 0, 1, false)
+	addNewForm := tview.NewForm()
+	displayList := tview.NewList()
+	headerBox := tview.NewBox()
+	commandList := tview.NewList()
 
-	flex.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if event.Rune() == 113 {
-			app.Stop()
-		} else if event.Rune() == 97 {
-			form.Clear(true)
-			addContactForm()
-			pages.SwitchToPage("Add Contact")
+	focusCommandsList := func() {
+		commandList.SetCurrentItem(0)
+		app.SetFocus(commandList)
+	}
+
+	displayList.AddItem("Return", "", 'r', func() {
+		focusCommandsList()
+	}).SetWrapAround(true)
+
+	refreshAddNewForm := func() {
+		deleteButtonIndex := addNewForm.GetButtonIndex("D")
+		if deleteButtonIndex != -1 {
+			addNewForm.RemoveButton(deleteButtonIndex)
 		}
-		return event
+		addNewForm.GetFormItemByLabel("Name").(*tview.InputField).SetText("")
+		addNewForm.GetFormItemByLabel("Init").(*tview.InputField).SetText("")
+		addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetText("")
+		addNewForm.GetFormItemByLabel("Team").(*tview.DropDown).SetCurrentOption(0)
+		addNewForm.GetFormItemByLabel("Prio").(*tview.InputField).SetText("")
+	}
+
+	refreshDisplayList := func() {
+		displayList.Clear()
+		displayList.AddItem("Return", "", 'r', func() {
+			focusCommandsList()
+		})
+		for _, character := range getCharactersSorted() {
+			var characterNameColored string
+			switch character.Team.Id {
+			case 0:
+				characterNameColored = "[blue]" + character.Name + "[-]"
+			case 1:
+				characterNameColored = "[green]" + character.Name + "[-]"
+			case 2:
+				characterNameColored = "[red]" + character.Name + "[-]"
+			case 3:
+				characterNameColored = "[yellow]" + character.Name + "[-]"
+			}
+			hpValue := func() string {
+				if character.HP <= 0 {
+					return ""
+				} else {
+					return " (" + strconv.Itoa(character.HP) + ")"
+				}
+			}
+			lineItem := strconv.Itoa(character.Init) + "   " + characterNameColored + hpValue()
+			displayList.AddItem(lineItem, "", 0, nil)
+		}
+	}
+
+	refreshAndFocusDisplayList := func() {
+		refreshAddNewForm()
+		refreshDisplayList()
+		focusCommandsList()
+	}
+
+	addNewForm.SetHorizontal(true).SetBorder(true).SetTitle(" Add New Line ")
+	displayList.SetBorder(true).SetTitle(" Initiative ")
+	headerBox.SetBorder(true).SetTitle(" Initiative Tracker ")
+	commandList.SetBorder(true).SetTitle(" Commands ")
+
+	teamDropDown := tview.NewDropDown()
+	teamDropDown.SetLabel("Team").SetOptions([]string{"PLYR", "ALLY", "ENMY", "UNKN"}, nil).SetCurrentOption(0)
+
+	addNewForm.AddInputField("Name", "", 10, nil, nil).
+		AddInputField("Init", "", 3, nil, nil).
+		AddInputField("HP", "", 4, nil, nil).
+		AddFormItem(teamDropDown).
+		AddInputField("Prio", "", 2, nil, nil).
+		AddButton("S", func() {
+			teamId, teamText := addNewForm.GetFormItemByLabel("Team").(*tview.DropDown).GetCurrentOption()
+			character := Character{
+				ID:   generateID(),
+				Name: addNewForm.GetFormItemByLabel("Name").(*tview.InputField).GetText(),
+				Init: func() int {
+					i, _ := strconv.Atoi(addNewForm.GetFormItemByLabel("Init").(*tview.InputField).GetText())
+					return i
+				}(),
+				HP: func() int {
+					i, _ := strconv.Atoi(addNewForm.GetFormItemByLabel("HP").(*tview.InputField).GetText())
+					return i
+				}(),
+				Team: Team{
+					Id:   teamId,
+					Text: teamText,
+				},
+				Priority: func() int {
+					i, _ := strconv.Atoi(addNewForm.GetFormItemByLabel("Prio").(*tview.InputField).GetText())
+					return i
+				}(),
+			}
+			addNewCharacter(character)
+			refreshAndFocusDisplayList()
+		}).
+		AddButton("C", func() {
+			refreshAddNewForm()
+			addNewForm.SetFocus(0)
+			app.SetFocus(addNewForm)
+		}).SetCancelFunc(func() {
+		refreshAddNewForm()
+		focusCommandsList()
 	})
 
-	pages.AddPage("Menu", flex, true, true)
-	pages.AddPage("Add Contact", form, true, false)
+	addNewForm.GetFormItemByLabel("Init").(*tview.InputField).SetAcceptanceFunc(tview.InputFieldInteger)
+	addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetAcceptanceFunc(tview.InputFieldInteger)
+	addNewForm.GetFormItemByLabel("Prio").(*tview.InputField).SetAcceptanceFunc(tview.InputFieldInteger)
 
-	if err := app.SetRoot(pages, true).EnableMouse(true).Run(); err != nil {
+	commandList.AddItem("Add New", "", 'n', func() {
+		addNewForm.SetFocus(0)
+		app.SetFocus(addNewForm)
+	}).AddItem("List", "", 'l', func() {
+		app.SetFocus(displayList)
+	}).AddItem("Exit", "", 'q', func() {
+		app.Stop()
+	}).SetSelectedFocusOnly(true)
+
+	displayList.SetSelectedFunc(func(index int, mainText string, secondaryText string, shortcut rune) {
+		if index == 0 {
+			focusCommandsList()
+		} else {
+			character := getCharacterByID(characters[index-1].ID)
+			removeCharacterByID(characters[index-1].ID)
+			addNewForm.GetFormItemByLabel("Name").(*tview.InputField).SetText(character.Name)
+			addNewForm.GetFormItemByLabel("Init").(*tview.InputField).SetText(strconv.Itoa(character.Init))
+			addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetText(strconv.Itoa(character.HP))
+			addNewForm.GetFormItemByLabel("Team").(*tview.DropDown).SetCurrentOption(character.Team.Id)
+			addNewForm.GetFormItemByLabel("Prio").(*tview.InputField).SetText(strconv.Itoa(character.Priority))
+			addNewForm.AddButton("[white:red]D[-]", func() {
+				removeCharacterByID(character.ID)
+				refreshAndFocusDisplayList()
+			})
+			addNewForm.SetFocus(2) // focuses HP since that is most likely to be edited
+			app.SetFocus(addNewForm)
+		}
+	}).SetSelectedFocusOnly(true)
+
+	flex := tview.NewFlex().SetDirection(tview.FlexRow).
+		AddItem(headerBox, 2, 1, false).
+		AddItem(tview.NewFlex().SetDirection(tview.FlexColumn).
+			AddItem(commandList, 16, 1, false).
+			AddItem(displayList, 0, 2, false), 0, 2, false).
+		AddItem(addNewForm, 5, 1, false)
+
+	if err := app.SetRoot(flex, true).SetFocus(commandList).Run(); err != nil {
 		panic(err)
 	}
-
-}
-
-func addContactList() {
-	contactsList.Clear()
-	for index, contact := range contacts {
-		contactsList.AddItem(contact.firstName+" "+contact.lastName, " ", rune(49+index), nil)
-	}
-}
-
-func addContactForm() *tview.Form {
-
-	contact := Contact{}
-
-	form.AddInputField("First Name", "", 20, nil, func(firstName string) {
-		contact.firstName = firstName
-	})
-
-	form.AddInputField("Last Name", "", 20, nil, func(lastName string) {
-		contact.lastName = lastName
-	})
-
-	form.AddInputField("Email", "", 20, nil, func(email string) {
-		contact.email = email
-	})
-
-	form.AddInputField("Phone", "", 20, nil, func(phone string) {
-		contact.phoneNumber = phone
-	})
-
-	form.AddDropDown("State", states, 0, func(state string, index int) {
-		contact.state = state
-	})
-
-	form.AddCheckbox("Business", false, func(business bool) {
-		contact.business = business
-	})
-
-	form.AddButton("Save", func() {
-		contacts = append(contacts, contact)
-		addContactList()
-		pages.SwitchToPage("Menu")
-	})
-
-	return form
-}
-
-func setConcatText(contact *Contact) {
-	contactText.Clear()
-	text := contact.firstName + " " + contact.lastName + "\n" + contact.email + "\n" + contact.phoneNumber
-	contactText.SetText(text)
 }
