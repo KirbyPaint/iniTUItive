@@ -96,8 +96,12 @@ func main() {
 		focusCommandsList()
 	}).SetWrapAround(true)
 
-	// Function to clear the form fields of data
+	// Function to clear the form fields of data and reset the buttons
 	refreshAddNewForm := func() {
+		deleteButtonIndex := addNewForm.GetButtonIndex("D")
+		if deleteButtonIndex != -1 {
+			addNewForm.RemoveButton(deleteButtonIndex)
+		}
 		addNewForm.GetFormItemByLabel("Name").(*tview.InputField).SetText("")
 		addNewForm.GetFormItemByLabel("Init").(*tview.InputField).SetText("")
 		addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetText("")
@@ -220,9 +224,6 @@ func main() {
 			app.SetFocus(addNewForm)
 		}
 	}).SetSelectedFocusOnly(true)
-
-	// If d is pressed on a list item remove it
-	// displayList.RemoveItem(displayList.GetCurrentItem()).SetSelectedFocusOnly(true)
 
 	// Set the layout of components
 	flex := tview.NewFlex().SetDirection(tview.FlexRow).
