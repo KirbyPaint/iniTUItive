@@ -83,9 +83,9 @@ func main() {
 		app.SetFocus(commandList)
 	}
 
-	displayList.AddItem("Return", "", 'r', func() {
-		focusCommandsList()
-	}).SetWrapAround(true)
+	// displayList.AddItem("Return", "", 'r', func() {
+	// 	focusCommandsList()
+	// }).SetWrapAround(true)
 
 	refreshAddNewForm := func() {
 		deleteButtonIndex := addNewForm.GetButtonIndex("D")
@@ -99,11 +99,11 @@ func main() {
 		addNewForm.GetFormItemByLabel("Prio").(*tview.InputField).SetText("")
 	}
 
-	refreshDisplayList := func() {
+	renderInitiativeList := func() {
 		displayList.Clear()
 		displayList.AddItem("Return", "", 'r', func() {
 			focusCommandsList()
-		})
+		}).SetWrapAround(true)
 		for _, character := range getCharactersSorted() {
 			var characterNameColored string
 			switch character.Team.Id {
@@ -130,7 +130,7 @@ func main() {
 
 	refreshAndFocusDisplayList := func() {
 		refreshAddNewForm()
-		refreshDisplayList()
+		renderInitiativeList()
 		focusCommandsList()
 	}
 
@@ -220,6 +220,8 @@ func main() {
 			AddItem(commandList, 16, 1, false).
 			AddItem(displayList, 0, 2, false), 0, 2, false).
 		AddItem(addNewForm, 5, 1, false)
+
+	renderInitiativeList()
 
 	if err := app.SetRoot(flex, true).SetFocus(commandList).Run(); err != nil {
 		panic(err)
