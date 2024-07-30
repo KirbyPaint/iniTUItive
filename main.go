@@ -128,6 +128,12 @@ func main() {
 		}
 	}
 
+	refreshAndFocusDisplayList := func() {
+		refreshAddNewForm()
+		refreshDisplayList()
+		focusCommandsList()
+	}
+
 	addNewForm.SetHorizontal(true).SetBorder(true).SetTitle(" Add New Line ")
 	displayList.SetBorder(true).SetTitle(" Initiative ")
 	headerBox.SetBorder(true).SetTitle(" Initiative Tracker ")
@@ -164,9 +170,7 @@ func main() {
 				}(),
 			}
 			addNewCharacter(character)
-			refreshAddNewForm()
-			refreshDisplayList()
-			focusCommandsList()
+			refreshAndFocusDisplayList()
 		}).
 		AddButton("C", func() {
 			refreshAddNewForm()
@@ -203,9 +207,7 @@ func main() {
 			addNewForm.GetFormItemByLabel("Prio").(*tview.InputField).SetText(strconv.Itoa(character.Priority))
 			addNewForm.AddButton("[white:red]D[-]", func() {
 				removeCharacterByID(character.ID)
-				refreshAddNewForm()
-				refreshDisplayList()
-				focusCommandsList()
+				refreshAndFocusDisplayList()
 			})
 			addNewForm.SetFocus(2) // focuses HP since that is most likely to be edited
 			app.SetFocus(addNewForm)
