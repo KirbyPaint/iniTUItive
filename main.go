@@ -209,6 +209,13 @@ func main() {
 			addNewForm.GetFormItemByLabel("HP").(*tview.InputField).SetText(strconv.Itoa(character.HP))
 			addNewForm.GetFormItemByLabel("Team").(*tview.DropDown).SetCurrentOption(character.Team.Id)
 			addNewForm.GetFormItemByLabel("Prio").(*tview.InputField).SetText(strconv.Itoa(character.Priority))
+			addNewForm.AddButton("D", func() {
+				// Delete the character we are editing
+				removeCharacterByID(character.ID)
+				refreshAddNewForm()
+				refreshDisplayList()
+				focusCommandsList()
+			})
 			addNewForm.SetFocus(2) // focuses HP since that is most likely to be edited
 			app.SetFocus(addNewForm)
 		}
